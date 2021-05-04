@@ -6,12 +6,17 @@ from common.params_pxd cimport Params as c_Params
 
 import os
 import threading
+from enum import Enum, unique
+
 from common.basedir import BASEDIR
 
-cdef enum TxType:
+# TODO: move this down to the C version
+@unique
+class TxType(Enum):
   PERSISTENT = 1
-  CLEAR_ON_MANAGER_START = 2
-  CLEAR_ON_PANDA_DISCONNECT = 3
+  CLEAR_ON_IGNITION = 2
+  CLEAR_ON_MANAGER_START = 3
+  CLEAR_ON_PANDA_DISCONNECT = 4
 
 keys = {
   b"AccessToken": [TxType.CLEAR_ON_MANAGER_START],
@@ -21,11 +26,11 @@ keys = {
   b"AthenadPid": [TxType.PERSISTENT],
   b"CalibrationParams": [TxType.PERSISTENT],
   b"CarBatteryCapacity": [TxType.PERSISTENT],
-  b"CarParams": [TxType.CLEAR_ON_MANAGER_START, TxType.CLEAR_ON_PANDA_DISCONNECT],
+  b"CarParams": [TxType.CLEAR_ON_MANAGER_START, TxType.CLEAR_ON_PANDA_DISCONNECT, TxType.CLEAR_ON_IGNITION],
   b"CarParamsCache": [TxType.CLEAR_ON_MANAGER_START, TxType.CLEAR_ON_PANDA_DISCONNECT],
-  b"CarVin": [TxType.CLEAR_ON_MANAGER_START, TxType.CLEAR_ON_PANDA_DISCONNECT],
+  b"CarVin": [TxType.CLEAR_ON_MANAGER_START, TxType.CLEAR_ON_PANDA_DISCONNECT, TxType.CLEAR_ON_IGNITION],
   b"CommunityFeaturesToggle": [TxType.PERSISTENT],
-  b"ControlsReady": [TxType.CLEAR_ON_MANAGER_START, TxType.CLEAR_ON_PANDA_DISCONNECT],
+  b"ControlsReady": [TxType.CLEAR_ON_MANAGER_START, TxType.CLEAR_ON_PANDA_DISCONNECT, TxType.CLEAR_ON_IGNITION],
   b"EnableLteOnroad": [TxType.PERSISTENT],
   b"EndToEndToggle": [TxType.PERSISTENT],
   b"CompletedTrainingVersion": [TxType.PERSISTENT],
@@ -109,16 +114,10 @@ cdef class Params:
   def __dealloc__(self):
     del self.p
 
-  def clear_all(self, tx_type=None):
+  def clear_key(self, tx_type=None):
     for key in keys:
       if tx_type is None or tx_type in keys[key]:
         self.delete(key)
-
-  def manager_start(self):
-    self.clear_all(TxType.CLEAR_ON_MANAGER_START)
-
-  def panda_disconnect(self):
-    self.clear_all(TxType.CLEAR_ON_PANDA_DISCONNECT)
 
   def check_key(self, key):
     key = ensure_bytes(key)

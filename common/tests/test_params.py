@@ -6,7 +6,7 @@ import shutil
 import stat
 import unittest
 
-from common.params import Params, UnknownKeyName, put_nonblocking
+from common.params import Params, TxType, UnknownKeyName, put_nonblocking
 
 class TestParams(unittest.TestCase):
   def setUp(self):
@@ -35,7 +35,7 @@ class TestParams(unittest.TestCase):
     self.params.put("CarParams", "test")
     self.params.put("DongleId", "cb38263377b873ee")
     assert self.params.get("CarParams") == b"test"
-    self.params.panda_disconnect()
+    self.params.clear_key(TxType.CLEAR_ON_PANDA_DISCONNECT)
     assert self.params.get("CarParams") is None
     assert self.params.get("DongleId") is not None
 
@@ -43,9 +43,15 @@ class TestParams(unittest.TestCase):
     self.params.put("CarParams", "test")
     self.params.put("DongleId", "cb38263377b873ee")
     assert self.params.get("CarParams") == b"test"
-    self.params.manager_start()
+    self.params.clear_key(TxType.CLEAR_ON_MANAGER_START)
     assert self.params.get("CarParams") is None
     assert self.params.get("DongleId") is not None
+
+  def test_params_get_cleared_ignition(self):
+    self.params.put("ControlsReady", "test")
+    assert self.params.get("ControlsReady") == b"test"
+    self.params.clear_key(TxType.CLEAR_ON_IGNITION)
+    assert self.params.get("ControlsReady") is None
 
   def test_params_two_things(self):
     self.params.put("DongleId", "bob")
