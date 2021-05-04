@@ -114,7 +114,7 @@ cdef class Params:
   def __dealloc__(self):
     del self.p
 
-  def clear_key(self, tx_type=None):
+  def clear_all(self, tx_type=None):
     for key in keys:
       if tx_type is None or tx_type in keys[key]:
         self.delete(key)

@@ -28,7 +28,7 @@ def manager_init():
   set_time(cloudlog)
 
   params = Params()
-  params.clear_key(TxType.CLEAR_ON_MANAGER_START)
+  params.clear_all(TxType.CLEAR_ON_MANAGER_START)
 
   default_params = [
     ("CompletedTrainingVersion", "0"),
@@ -138,7 +138,7 @@ def manager_thread():
     started = sm['deviceState'].started
     driverview = params.get_bool("IsDriverViewEnabled")
     if started and not started_prev:
-      params.clear_key(TxType.CLEAR_ON_IGNITION)
+      params.clear_all(TxType.CLEAR_ON_IGNITION)
 
     ensure_running(managed_processes.values(), started, driverview, not_run)
 
